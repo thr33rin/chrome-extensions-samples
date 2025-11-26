@@ -70,6 +70,36 @@
   background: #e2e2e2;
 }
 
+/* Reminder settings row */
+#todo-overlay-reminder-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #555;
+}
+
+#todo-overlay-reminder-row input {
+  width: 48px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 11px;
+}
+
+#todo-overlay-reminder-row button {
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+#todo-overlay-reminder-row button:hover {
+  background: #e2e2e2;
+}
+
 #todo-overlay-list {
   list-style: none;
   padding: 0;
@@ -106,4 +136,55 @@
 
 .todo-overlay-item button:hover {
   color: #444;
+}
+
+/* Full-screen reminder overlay */
+#todo-reminder-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2147483647;
+  display: none; /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#todo-reminder-box {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 24px;
+  max-width: 360px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+#todo-reminder-box h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+#todo-reminder-box p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+#todo-reminder-buttons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+#todo-reminder-buttons button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#todo-reminder-buttons button:hover {
+  background: #e2e2e2;
 }

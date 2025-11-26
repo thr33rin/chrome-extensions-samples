@@ -4,10 +4,14 @@ if (!window.__todoOverlayInjected) {
 
   (function () {
     const STORAGE_KEY = "todoOverlayItems";
+    const STORAGE_REMINDER_KEY = "todoOverlayReminderMinutes";
 
     let items = [];
+    let reminderMinutes = null;
+    let reminderIntervalId = null;
 
-    // Create root container
+    // --- Small overlay panel ---
+
     const container = document.createElement("div");
     container.id = "todo-overlay-container";
 
@@ -43,11 +47,32 @@ if (!window.__todoOverlayInjected) {
     inputRow.appendChild(input);
     inputRow.appendChild(addBtn);
 
+    // Reminder settings row
+    const reminderRow = document.createElement("div");
+    reminderRow.id = "todo-overlay-reminder-row";
+
+    const reminderLabel = document.createElement("span");
+    reminderLabel.textContent = "Remind every";
+
+    const reminderInput = document.createElement("input");
+    reminderInput.type = "number";
+    reminderInput.min = "0.1";
+    reminderInput.step = "0.1";
+    reminderInput.placeholder = "mins";
+
+    const reminderButton = document.createElement("button");
+    reminderButton.textContent = "Set";
+
+    reminderRow.appendChild(reminderLabel);
+    reminderRow.appendChild(reminderInput);
+    reminderRow.appendChild(reminderButton);
+
     // List
     const list = document.createElement("ul");
     list.id = "todo-overlay-list";
 
     body.appendChild(inputRow);
+    body.appendChild(reminderRow);
     body.appendChild(list);
 
     container.appendChild(header);
@@ -55,19 +80,86 @@ if (!window.__todoOverlayInjected) {
 
     document.documentElement.appendChild(container);
 
-    // Load existing items from chrome.storage
-    function loadItems() {
-      if (!chrome || !chrome.storage || !chrome.storage.sync) {
-        console.warn("chrome.storage.sync not available");
+    // --- Big reminder overlay ---
+
+    const reminderOverlay = document.createElement("div");
+    reminderOverlay.id = "todo-reminder-overlay";
+
+    const reminderBox = document.createElement("div");
+    reminderBox.id = "todo-reminder-box";
+
+    const reminderTitle = document.createElement("h2");
+    reminderTitle.textContent = "To-do check-in";
+
+    const reminderText1 = document.createElement("p");
+    const reminderText2 = document.createElement("p");
+
+    const reminderButtons = document.createElement("div");
+    reminderButtons.id = "todo-reminder-buttons";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "OK";
+
+    reminderButtons.appendChild(closeBtn);
+
+    reminderBox.appendChild(reminderTitle);
+    reminderBox.appendChild(reminderText1);
+    reminderBox.appendChild(reminderText2);
+    reminderBox.appendChild(reminderButtons);
+
+    reminderOverlay.appendChild(reminderBox);
+    document.documentElement.appendChild(reminderOverlay);
+
+    closeBtn.addEventListener("click", () => {
+      reminderOverlay.style.display = "none";
+    });
+
+    function showReminderPopup() {
+      const total = items.length;
+      const done = items.filter((i) => i.done).length;
+
+      console.log("[todo-overlay] reminder fired. done:", done, "total:", total);
+
+      if (total === 0) {
         return;
       }
 
-      chrome.storage.sync.get([STORAGE_KEY], (result) => {
+      if (done === total) {
+        return;
+      }
+
+      reminderText1.textContent = `You have completed ${done} of ${total} tasks.`;
+
+      const remaining = total - done;
+      reminderText2.textContent =
+        remaining === 1
+          ? "You still have 1 task left. Fancy finishing it?"
+          : `You still have ${remaining} tasks left. Time to chip away at them.`;
+
+      reminderOverlay.style.display = "flex";
+    }
+
+    // --- Storage & state ---
+
+    function loadState() {
+      if (!chrome || !chrome.storage || !chrome.storage.sync) {
+        console.warn("[todo-overlay] chrome.storage.sync not available");
+        return;
+      }
+
+      chrome.storage.sync.get([STORAGE_KEY, STORAGE_REMINDER_KEY], (result) => {
         if (Array.isArray(result[STORAGE_KEY])) {
           items = result[STORAGE_KEY];
         } else {
           items = [];
         }
+
+        if (typeof result[STORAGE_REMINDER_KEY] === "number") {
+          reminderMinutes = result[STORAGE_REMINDER_KEY];
+          reminderInput.value = String(reminderMinutes);
+          setupReminderInterval();
+        }
+
         renderList();
       });
     }
@@ -75,6 +167,16 @@ if (!window.__todoOverlayInjected) {
     function saveItems() {
       if (!chrome || !chrome.storage || !chrome.storage.sync) return;
       chrome.storage.sync.set({ [STORAGE_KEY]: items });
+    }
+
+    function saveReminderMinutes() {
+      if (!chrome || !chrome.storage || !chrome.storage.sync) return;
+
+      if (typeof reminderMinutes === "number" && reminderMinutes > 0) {
+        chrome.storage.sync.set({ [STORAGE_REMINDER_KEY]: reminderMinutes });
+      } else {
+        chrome.storage.sync.remove(STORAGE_REMINDER_KEY);
+      }
     }
 
     function renderList() {
@@ -136,7 +238,7 @@ if (!window.__todoOverlayInjected) {
       }
     });
 
-    // Minimise / maximise behaviour
+    // Minimise / maximise
     let collapsed = false;
     toggleBtn.addEventListener("click", () => {
       collapsed = !collapsed;
@@ -144,7 +246,45 @@ if (!window.__todoOverlayInjected) {
       toggleBtn.textContent = collapsed ? "+" : "–";
     });
 
+    // --- Reminder interval ---
+
+    function setupReminderInterval() {
+      if (reminderIntervalId) {
+        clearInterval(reminderIntervalId);
+        reminderIntervalId = null;
+      }
+
+      if (
+        typeof reminderMinutes === "number" &&
+        reminderMinutes > 0 &&
+        isFinite(reminderMinutes)
+      ) {
+        const ms = reminderMinutes * 60 * 1000;
+        console.log("[todo-overlay] setting reminder interval to", ms, "ms");
+        reminderIntervalId = setInterval(() => {
+          showReminderPopup();
+        }, ms);
+      } else {
+        console.log("[todo-overlay] reminder disabled");
+      }
+    }
+
+    reminderButton.addEventListener("click", () => {
+      const value = parseFloat(reminderInput.value);
+      if (isNaN(value) || value <= 0) {
+        alert("Please enter a positive number of minutes (you can use decimals).");
+        return;
+      }
+      reminderMinutes = value;
+      saveReminderMinutes();
+      setupReminderInterval();
+      reminderButton.textContent = "Set ✓";
+      setTimeout(() => {
+        reminderButton.textContent = "Set";
+      }, 1000);
+    });
+
     // Initial load
-    loadItems();
+    loadState();
   })();
 }
