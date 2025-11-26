@@ -1,0 +1,109 @@
+#todo-overlay-container {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 260px;
+  max-height: 60vh;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  color: #222;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#todo-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: #f3f3f3;
+  border-bottom: 1px solid #ddd;
+}
+
+#todo-overlay-header span {
+  font-weight: 600;
+}
+
+#todo-overlay-toggle {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+#todo-overlay-body {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#todo-overlay-input-row {
+  display: flex;
+  gap: 4px;
+}
+
+#todo-overlay-input-row input {
+  flex: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+}
+
+#todo-overlay-input-row button {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#todo-overlay-input-row button:hover {
+  background: #e2e2e2;
+}
+
+#todo-overlay-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.todo-overlay-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.todo-overlay-item span {
+  flex: 1;
+  word-break: break-word;
+}
+
+.todo-overlay-item.done span {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.todo-overlay-item button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+  color: #888;
+}
+
+.todo-overlay-item button:hover {
+  color: #444;
+}

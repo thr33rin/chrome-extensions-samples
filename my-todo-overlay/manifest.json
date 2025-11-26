@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Simple To-Do Overlay",
+  "version": "1.0.0",
+  "description": "Shows a floating to-do list on every page.",
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["todo-overlay.js"],
+      "css": ["todo-overlay.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
